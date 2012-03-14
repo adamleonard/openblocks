@@ -85,6 +85,7 @@ public class FocusTraversalManager implements MouseListener, KeyListener, Worksp
     /////////////////
     public FocusTraversalManager(Workspace workspace) {
         this.workspace = workspace;
+        workspace.getBlockCanvas().getCanvas().addMouseListener(this);
     }
 
     ///////////////

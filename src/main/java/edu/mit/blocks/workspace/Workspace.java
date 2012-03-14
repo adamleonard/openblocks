@@ -117,11 +117,10 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
 
     /// RENDERING LAYERS ///
     public final static Integer PAGE_LAYER = new Integer(0);
-    public final static Integer BLOCK_HIGHLIGHT_LAYER = new Integer(1);
-    public final static Integer BLOCK_LAYER = new Integer(2);
+    public final static Integer BLOCK_LAYER = new Integer(1);
+    public final static Integer BLOCK_HIGHLIGHT_LAYER = new Integer(2);
     public final static Integer WIDGET_LAYER = new Integer(3);
-    public final static Integer DRAGGED_BLOCK_HIGHLIGHT_LAYER = new Integer(4);
-    public final static Integer DRAGGED_BLOCK_LAYER = new Integer(5);
+    public final static Integer DRAGGED_BLOCK_LAYER = new Integer(4);
 
     public Workspace() {
         super();
@@ -942,6 +941,6 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
     }
 
     public void addToHighlightLayer(Component c) {
-        this.add(c, DRAGGED_BLOCK_HIGHLIGHT_LAYER);
+        this.add(c, BLOCK_HIGHLIGHT_LAYER);
     }
 }

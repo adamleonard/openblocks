@@ -18,6 +18,8 @@ import org.w3c.dom.NodeList;
 import edu.mit.blocks.codeblocks.BlockConnector.PositionType;
 import edu.mit.blocks.renderable.BlockImageIcon;
 import edu.mit.blocks.renderable.BlockImageIcon.ImageLocation;
+import edu.mit.blocks.renderable.RenderableBlock;
+import edu.mit.blocks.renderable.BlockUtilities;
 import edu.mit.blocks.workspace.ISupportMemento;
 import edu.mit.blocks.workspace.Workspace;
 import edu.mit.blocks.workspace.WorkspaceEnvironment;
@@ -70,6 +72,9 @@ public class Block implements ISupportMemento {
 
     //argument descriptions
     private ArrayList<String> argumentDescriptions;
+    
+    //images
+    Map<ImageLocation, BlockImageIcon> blockImageMap;
 
     protected final Workspace workspace;
 
@@ -140,6 +145,13 @@ public class Block implements ISupportMemento {
         if (linkToStubs && this.hasStubs()) {
             BlockStub.putNewParentInStubMap(workspace, this.blockID);
         }
+        
+        //initialize block image map
+        blockImageMap = new HashMap<ImageLocation, BlockImageIcon>();
+        for (BlockImageIcon img : getGenus().getInitBlockImageMap().values()) {
+            blockImageMap.put(img.getImageLocation(), new BlockImageIcon(img.getImageIcon(),
+             img.getURL(), img.getImageLocation(), img.isEditable(), img.wrapText()));
+        }        
     }
 
     /**
@@ -1173,17 +1185,27 @@ public class Block implements ISupportMemento {
     public Color getColor() {
         return getGenus().getColor();
     }
-
     /**
      * Returns the initial BlockImageIcon mapping of this.  Returned Map is unmodifiable.
      * FORWARDED FROM BLOCK GENUS
      * @return the initial and unmodifiable BlockImageIcon mapping of this
      */
+     //AL: Removed
+     /*
     public Map<ImageLocation, BlockImageIcon> getInitBlockImageMap() {
         return getGenus().getInitBlockImageMap();
     }
-
-    /**
+    */
+    
+    public Map<ImageLocation, BlockImageIcon> getBlockImageMap() {
+        return blockImageMap;
+    }
+    
+    public void setBlockImageMap(Map<ImageLocation, BlockImageIcon> aMap) {
+    	blockImageMap = aMap;
+    }
+    
+     /**
      * Returns the value of the specified language dependent property
      * (partially) FORWARDED FROM BLOCK GENUS depending on specified property
      * @param property the property to look up
@@ -1337,8 +1359,27 @@ public class Block implements ISupportMemento {
             //sockets tricky... because what if
             //one of the sockets is expanded?  should the socket keep a reference
             //to their genus socket?  and so should the expanded one?
-        }
-
+        }     
+        //save images
+        if (blockImageMap != null && blockImageMap.size() > 0) {
+        	Element imagesElement = document.createElement("Images");
+        	for(BlockImageIcon icon : blockImageMap.values()) {
+        		Element imageElement = document.createElement("Image");
+        		imageElement.setAttribute("block-location", icon.getImageLocation().toString());
+                imageElement.setAttribute("image-editable", icon.isEditable() ? "yes" : "no");
+                imageElement.setAttribute("wrap-text", icon.wrapText() ? "yes" : "no");
+        		imageElement.setAttribute("width", String.valueOf(icon.getImageIcon().getIconWidth()));
+        		imageElement.setAttribute("height", String.valueOf(icon.getImageIcon().getIconHeight()));
+				
+				Element fileLocationElement = document.createElement("FileLocation");
+				fileLocationElement.appendChild(document.createTextNode(icon.getURL().getFile()));
+				imageElement.appendChild(fileLocationElement);
+				
+				imagesElement.appendChild(imageElement);
+			}
+			blockElement.appendChild(imagesElement);
+		}
+        
         //save block properties that are not specified within genus
         //i.e. properties that were created/specified during runtime
 
@@ -1376,6 +1417,7 @@ public class Block implements ISupportMemento {
         BlockConnector plug = null;
         ArrayList<BlockConnector> sockets = new ArrayList<BlockConnector>();
         HashMap<String, String> blockLangProperties = null;
+        Map<ImageLocation, BlockImageIcon> blockImageMap = null;
         boolean hasFocus = false;
 
         //stub information if this node contains a stub
@@ -1488,6 +1530,10 @@ public class Block implements ISupportMemento {
                             }
                         }
                     }
+                } else if (child.getNodeName().equals("Images")) {
+                	NodeList imageNodes = child.getChildNodes();
+                	if(imageNodes != null && imageNodes.getLength() > 0)
+                		blockImageMap = BlockUtilities.loadBlockImages(imageNodes);
                 }
             }
 
@@ -1535,6 +1581,10 @@ public class Block implements ISupportMemento {
             if (blockLangProperties != null && !blockLangProperties.isEmpty()) {
                 block.properties = blockLangProperties;
             }
+            
+            if (blockImageMap != null && !blockImageMap.isEmpty()) {
+				block.setBlockImageMap(blockImageMap);
+			}
 
             return block;
         }

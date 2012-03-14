@@ -1,6 +1,7 @@
 package edu.mit.blocks.renderable;
 
 import java.awt.Dimension;
+import java.net.URL;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -38,6 +39,7 @@ public class BlockImageIcon extends JLabel {
         }
     }
     private ImageIcon blockImageIcon;
+    private URL URL;
     private ImageLocation location;
     private boolean isEditable;
     private boolean wrapText;
@@ -50,12 +52,13 @@ public class BlockImageIcon extends JLabel {
      * @param wrapText if true, the block labels of the RendearbleBlock will not overlap the ImageIcon drawn on it at 
      * the specified location
      */
-    public BlockImageIcon(ImageIcon blockImageIcon, ImageLocation location, boolean isEditable, boolean wrapText) {
+    public BlockImageIcon(ImageIcon blockImageIcon, URL URL, ImageLocation location, boolean isEditable, boolean wrapText) {
         super(blockImageIcon);
         setPreferredSize(new Dimension(blockImageIcon.getIconWidth(), blockImageIcon.getIconHeight()));
         setSize(new Dimension(blockImageIcon.getIconWidth(), blockImageIcon.getIconHeight()));
         setMinimumSize(new Dimension(blockImageIcon.getIconWidth(), blockImageIcon.getIconHeight()));
         this.blockImageIcon = blockImageIcon;
+        this.URL = URL;
         this.location = location;
 
         this.isEditable = isEditable;
@@ -69,6 +72,10 @@ public class BlockImageIcon extends JLabel {
     public void setImageIcon(ImageIcon icon) {
         blockImageIcon = icon;
         super.setIcon(icon);
+    }
+
+    public URL getURL() {
+        return URL;
     }
 
     public ImageLocation getImageLocation() {

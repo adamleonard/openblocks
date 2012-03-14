@@ -10,6 +10,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.awt.Image;
+
+import javax.swing.ImageIcon;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import edu.mit.blocks.codeblocks.Block;
 import edu.mit.blocks.codeblocks.BlockConnector;
@@ -19,6 +31,8 @@ import edu.mit.blocks.codeblocks.BlockStub;
 import edu.mit.blocks.workspace.Workspace;
 import edu.mit.blocks.workspace.WorkspaceEvent;
 import edu.mit.blocks.workspace.WorkspaceWidget;
+import edu.mit.blocks.renderable.BlockImageIcon;
+import edu.mit.blocks.renderable.BlockImageIcon.ImageLocation;
 
 public class BlockUtilities {
 
@@ -147,6 +161,8 @@ public class BlockUtilities {
         } else {
             block = new Block(workspace, myblock.getGenusName(), label);
         }
+        
+        block.setBlockImageMap(myblock.getBlockImageMap());
 
         // TODO - djwendel - create a copy of the RB properties too, using an RB copy constructor.  Don't just use the genus.
         //RenderableBlock renderable = new RenderableBlock(this.getParentWidget(), block.getBlockID());
@@ -431,7 +447,7 @@ public class BlockUtilities {
         return null;
     }
 
-    private static boolean isNullBlockInstance(Workspace workspace, Long blockID) {
+    public static boolean isNullBlockInstance(Workspace workspace, Long blockID) {
         if (blockID == null) {
             return true;
         } else if (blockID.equals(Block.NULL)) {
@@ -562,4 +578,78 @@ public class BlockUtilities {
         }
         return renderable;
     }
+    
+    public static Map<ImageLocation, BlockImageIcon> loadBlockImages(NodeList images) {
+    	Map<ImageLocation, BlockImageIcon> result = new HashMap<ImageLocation, BlockImageIcon>();
+    	
+        Pattern attrExtractor = Pattern.compile("\"(.*)\"");
+        Matcher nameMatcher;
+        Node imageNode;
+        String location = null;
+        boolean isEditable = false;
+        boolean textWrap = false;
+        for (int i = 0; i < images.getLength(); i++) {
+            imageNode = images.item(i);
+            if (imageNode.getNodeName().equals("Image")) {
+                if (imageNode.getAttributes().getLength() > 0) {
+                    //load image properties
+                    nameMatcher = attrExtractor.matcher(imageNode.getAttributes().getNamedItem("block-location").toString());
+                    if (nameMatcher.find()) {
+                        location = nameMatcher.group(1);
+                    }
+                    nameMatcher = attrExtractor.matcher(imageNode.getAttributes().getNamedItem("image-editable").toString());
+                    if (nameMatcher.find()) {
+                        isEditable = nameMatcher.group(1).equals("yes") ? true : false;
+                    }
+                    nameMatcher = attrExtractor.matcher(imageNode.getAttributes().getNamedItem("wrap-text").toString());
+                    if (nameMatcher.find()) {
+                        textWrap = nameMatcher.group(1).equals("yes") ? true : false;
+                    }
+                    int width = -1;
+                    int height = -1;
+                    Node opt_item = imageNode.getAttributes().getNamedItem("width");
+                    if (opt_item != null) {
+                        nameMatcher = attrExtractor.matcher(opt_item.toString());
+                        if (nameMatcher.find()) {
+                            width = Integer.parseInt(nameMatcher.group(1));
+                        }
+                    }
+                    opt_item = imageNode.getAttributes().getNamedItem("height");
+                    if (opt_item != null) {
+                        nameMatcher = attrExtractor.matcher(opt_item.toString());
+                        if (nameMatcher.find()) {
+                            height = Integer.parseInt(nameMatcher.group(1));
+                        }
+                    }
+                    //load actual image
+                    NodeList imageChildren = imageNode.getChildNodes();
+                    Node imageLocationNode;
+                    for (int j = 0; j < imageChildren.getLength(); j++) {
+                        imageLocationNode = imageChildren.item(j);
+                        if (imageLocationNode.getNodeName().equals("FileLocation")) {
+                            String fileLocation = imageLocationNode.getTextContent();
+                            try {
+                                URL fileURL = new URL("file", "", /*workingDirectory +*/ fileLocation);
+                                if (fileURL != null && location != null) {
+                                    //translate location String to ImageLocation representation
+                                    ImageLocation imgLoc = ImageLocation.getImageLocation(location);
+                                    assert imgLoc != null : "Invalid location string loaded: " + imgLoc;
+
+                                    //store in blockImageMap
+                                    ImageIcon icon = new ImageIcon(fileURL);
+                                    if (width > 0 && height > 0) {
+                                        icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
+                                    }
+                                    result.put(imgLoc, new BlockImageIcon(icon, fileURL, imgLoc, isEditable, textWrap));
+                                }
+                            } catch (MalformedURLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+	}
 }

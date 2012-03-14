@@ -34,7 +34,7 @@ public class RBHighlightHandler extends JComponent implements ComponentListener,
 
     private static final long serialVersionUID = 328149080427L;
     //highlight stroke and width specifications
-    public static final int HIGHLIGHT_STROKE_WIDTH = 12;
+    public static final int HIGHLIGHT_STROKE_WIDTH = 8;
     private static final float HIGHLIGHT_ALPHA = .75f;
     private Color hColor = null;
     private boolean isSearchResult = false, hasFocus = false;
@@ -105,14 +105,16 @@ public class RBHighlightHandler extends JComponent implements ComponentListener,
 
     public void setParent(RBParent newParent) {
         removeFromParent();
-        newParent.addToHighlightLayer(this);
+       	newParent.addToHighlightLayer(this);
         updateImage();
         ((Container) newParent).validate();
+        updateBounds();
     }
 
     public void removeFromParent() {
         if (this.getParent() != null) {
             this.getParent().remove(this);
+            updateBounds();
         }
     }
 
@@ -128,7 +130,7 @@ public class RBHighlightHandler extends JComponent implements ComponentListener,
         if (hColor != null) {
             color = hColor;
         } else if (rb.getBlock().hasFocus()) {
-            color = new Color(200, 200, 255); //Color.BLUE);
+            color = new Color(195, 235, 255); //Color.BLUE);
         } else if (isSearchResult) {
             color = new Color(255, 255, 120); //Color.YELLOW);
         } else if (rb.getBlock().isBad()) {
@@ -151,7 +153,7 @@ public class RBHighlightHandler extends JComponent implements ComponentListener,
         hg.addRenderingHints(new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
         hg.setColor(color);
         hg.translate(HIGHLIGHT_STROKE_WIDTH / 2, HIGHLIGHT_STROKE_WIDTH / 2);
-        hg.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .2f));
+        hg.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .65f));
         for (int i = 0; i < HIGHLIGHT_STROKE_WIDTH; i++) {
             hg.setStroke(new BasicStroke(i));
             hg.draw(rb.getBlockArea());
@@ -164,7 +166,7 @@ public class RBHighlightHandler extends JComponent implements ComponentListener,
     /**
      * Resizes and moves this highlight to match its RB's size and position
      */
-    private void updateBounds() {
+    public void updateBounds() {
         Point rbLoc = SwingUtilities.convertPoint(rb.getParent(), rb.getLocation(), this.getParent());
         this.setBounds(rbLoc.x - HIGHLIGHT_STROKE_WIDTH / 2, rbLoc.y - HIGHLIGHT_STROKE_WIDTH / 2, rb.getBlockWidth() + HIGHLIGHT_STROKE_WIDTH, rb.getBlockHeight() + HIGHLIGHT_STROKE_WIDTH);
     }

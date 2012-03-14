@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Collection;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -148,8 +150,11 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
     // Collapse Label
     private CollapseLabel collapseLabel;
     //////////////////////////////////
+    // Images
+    // The images that are drawn on the cached representation of this block
+    private HashMap<ImageLocation, BlockImageIcon> cachedImageMap = new HashMap<ImageLocation, BlockImageIcon>();
+    //////////////////////////////////
     //TO BE DEPRECATED
-    private HashMap<ImageLocation, BlockImageIcon> imageMap = new HashMap<ImageLocation, BlockImageIcon>();
     // the values of the x and y coordinates of block when zoom = 1.0
     private double unzoomedX;
     private double unzoomedY;
@@ -189,13 +194,16 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
         this.blockID = blockID;
         workspace.getEnv().addRenderableBlock(this);
 
+		//AL: REMOVED. Use Block.getBlockImageMap instead
+		/*
         //initialize block image map
         //note: must do this before updateBuffImg();
-        for (BlockImageIcon img : getBlock().getInitBlockImageMap().values()) {
+        for (BlockImageIcon img : getBlock().getBlockImageMap().values()) {
             imageMap.put(img.getImageLocation(), new BlockImageIcon(img.getImageIcon(),
                     img.getImageLocation(), img.isEditable(), img.wrapText()));
             add(imageMap.get(img.getImageLocation()));
         }
+        */
         //set null layout so as to add blockLabels where ever we want
         setLayout(null);
 
@@ -453,7 +461,7 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
      * no BlockImageIcon exists at that location
      */
     public BlockImageIcon getImageIconAt(ImageLocation location) {
-        return imageMap.get(location);
+        return getBlock().getBlockImageMap().get(location);
     }
 
     ///////////////////
@@ -640,7 +648,7 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
      */
     public int accomodateImagesHeight() {
         int maxImgHt = 0;
-        for (BlockImageIcon img : getBlock().getInitBlockImageMap().values()) {
+        for (BlockImageIcon img : getBlock().getBlockImageMap().values()) {
             maxImgHt += img.getImageIcon().getIconHeight();
         }
         return maxImgHt;
@@ -652,7 +660,7 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
      */
     public int accomodateImagesWidth() {
         int maxImgWt = 0;
-        for (BlockImageIcon img : getBlock().getInitBlockImageMap().values()) {
+        for (BlockImageIcon img : getBlock().getBlockImageMap().values()) {
             maxImgWt += img.getImageIcon().getIconWidth();
         }
         return maxImgWt;
@@ -1229,6 +1237,15 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
 
         //ADD BLOCK COLOR
         Color blockColor = this.getBLockColor();
+        if(this.getBlock().hasFocus()) {
+        	//if the block has focus, make it brighter 
+        	//(in addition to the focus ring)
+        	float[] RGBComponents = blockColor.getRGBColorComponents(null);
+        	RGBComponents[0] = Math.min(RGBComponents[0] * 1.65f, 1.f);
+        	RGBComponents[1] = Math.min(RGBComponents[1] * 1.65f, 1.f);
+        	RGBComponents[2] = Math.min(RGBComponents[2] * 1.65f, 1.f);
+        	blockColor = new Color(RGBComponents[0], RGBComponents[1], RGBComponents[2]);
+       	}
         buffImgG2.setColor(blockColor);
         buffImgG2.fill(blockArea);
 
@@ -1246,9 +1263,27 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
      */
     private void repositionBlockImages(int width, int height) {
         int margin = 5;
-
+        
+        // First, draw the BlockImageIcons that were added since last redraw
+        // And remove those that were removed since last redraw
+        Map<ImageLocation, BlockImageIcon> newImageMap = getBlock().getBlockImageMap();
+        
+        List<BlockImageIcon> addedImages = new ArrayList<BlockImageIcon>(newImageMap.values());
+        addedImages.removeAll(cachedImageMap.values());
+        
+        Collection<BlockImageIcon> removedImages = new ArrayList<BlockImageIcon>(cachedImageMap.values());
+        removedImages.removeAll(newImageMap.values());
+        
+        for (BlockImageIcon addedImage : addedImages)
+        	add(addedImage);
+        for (BlockImageIcon removedImage : removedImages)
+        	remove(removedImage);
+        	
+        cachedImageMap = new HashMap<ImageLocation, BlockImageIcon> (newImageMap);
+       
+        //Reposition all the images
         //TODO need to take other images into acct if we enable multiple block images
-        for (BlockImageIcon img : imageMap.values()) {
+        for (BlockImageIcon img : newImageMap.values()) {
             ImageIcon icon = img.getImageIcon();
             Point imgLoc = new Point(0, 0);
             if (img.getImageLocation() == BlockImageIcon.ImageLocation.CENTER) {
@@ -1487,6 +1522,10 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
                 stopDragging(renderable.getWorkspace().getEnv().getRenderableBlock(socket.getBlockID()), widget);
             }
         }
+         // translate highlight along with the block - this would happen automatically,
+        // but putting the call here takes out any lag.
+        renderable.highlighter.repaint();
+        
         // drop this block on its widget (if w is null it'll throw an exception)
         widget.blockDropped(renderable);
         // stop rendering as transparent
@@ -1529,7 +1568,9 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
 
         // translate highlight along with the block - this would happen automatically,
         // but putting the call here takes out any lag.
+        renderable.highlighter.updateBounds();
         renderable.highlighter.repaint();
+        
         // Propagate the drag event to anything plugged into this block
         for (BlockConnector socket : BlockLinkChecker.getSocketEquivalents(renderable.getBlock())) {
             if (socket.hasBlock()) {
@@ -1697,6 +1738,7 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
         if (SwingUtilities.isLeftMouseButton(e)) {
             dragHandler.mousePressed(e);
             pickedUp = true; //mark this block as currently being picked up
+            workspace.getFocusManager().setFocus(getBlockID());
         }
     }
 

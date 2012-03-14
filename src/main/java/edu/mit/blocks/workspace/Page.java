@@ -633,7 +633,12 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
         }
 
         this.getRBParent().addToBlockLayer(block);
-        block.setHighlightParent(this.getRBParent());
+        
+        //the highlight layers should always live in the workspace
+        //this allows it to appear above all other blocks and shine through
+        //This is important, since the highlight rings are outset 
+        //from the blocks, and thus can easily overlap nearby blocks
+        block.setHighlightParent(workspace);
 
         //if block has page labels enabled, in other words, if it can, then set page label to this
         if (workspace.getEnv().getBlock(block.getBlockID()).isPageLabelSetByPage()) {
@@ -758,7 +763,13 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
             if (rb != null) {
                 //add graphically
                 getRBParent().addToBlockLayer(rb);
-                rb.setHighlightParent(this.getRBParent());
+                
+       			//the highlight layers should always live in the workspace
+        		//this allows it to appear above all other blocks and shine through
+        		//This is important, since the highlight rings are outset 
+        		//from the blocks, and thus can easily overlap nearby blocks
+        		rb.setHighlightParent(workspace);                
+                
                 //System.out.println("loading rb to canvas: "+rb+" at: "+rb.getBounds());
                 //add internallly
                 workspace.notifyListeners(new WorkspaceEvent(workspace, this, rb.getBlockID(), WorkspaceEvent.BLOCK_ADDED));
@@ -1031,9 +1042,9 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
                 }
             } else {
                 if (fullview) {
-                    paintFull(g, Color.gray);
+                    paintFull(g, new Color(240, 240, 240));
                 } else {
-                    paintCollapsed(g, Color.gray);
+                    paintCollapsed(g, new Color(240, 240, 240));
                 }
             }
 
@@ -1050,7 +1061,6 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
 
         @Override
         public void mouseClicked(MouseEvent e) {
-
             if ((!Page.this.hideMinimize)) {
                 if (fullview) {
                     this.setBounds(0, 0, COLLAPSED_WIDTH, charSet.length
@@ -1111,8 +1121,8 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
 class PageJComponent extends JLayeredPane implements RBParent {
 
     private static final long serialVersionUID = 83982193213L;
-    private static final Integer BLOCK_LAYER = new Integer(1);
-    private static final Integer HIGHLIGHT_LAYER = new Integer(0);
+    private static final Integer BLOCK_LAYER = new Integer(0);
+    private static final Integer HIGHLIGHT_LAYER = new Integer(1);
     private static final int IMAGE_WIDTH = 60;
     private Image image = null;
     private boolean fullview = true;

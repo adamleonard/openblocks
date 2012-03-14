@@ -451,7 +451,7 @@ public class BlockCanvas implements PageChangeListener, ISupportMemento {
             if (Workspace.everyPageHasDrawer) {
                 pageElement.setAttribute("drawer-with-page", "yes");
             }
-            pageElement.setAttribute("collapsible-pages", collapsible ? "yes" : "no");
+            //pageElement.setAttribute("collapsible-pages", collapsible ? "yes" : "no");
             for (Page page : pages) {
                 Node pageNode = page.getSaveNode(document);
                 pageElement.appendChild(pageNode);

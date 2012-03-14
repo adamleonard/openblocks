@@ -23,6 +23,7 @@ import edu.mit.blocks.renderable.BlockImageIcon;
 import edu.mit.blocks.renderable.BlockImageIcon.ImageLocation;
 import edu.mit.blocks.workspace.Workspace;
 import edu.mit.blocks.workspace.WorkspaceEnvironment;
+import edu.mit.blocks.renderable.BlockUtilities;
 
 /**
  * A genus describes the properties that define a block.  For example, fd is a block genus
@@ -608,74 +609,7 @@ public class BlockGenus {
      * @param genus BlockGenus instance to load images onto
      */
     private static void loadBlockImages(NodeList images, BlockGenus genus) {
-        Pattern attrExtractor = Pattern.compile("\"(.*)\"");
-        Matcher nameMatcher;
-        Node imageNode;
-        String location = null;
-        boolean isEditable = false;
-        boolean textWrap = false;
-        for (int i = 0; i < images.getLength(); i++) {
-            imageNode = images.item(i);
-            if (imageNode.getNodeName().equals("Image")) {
-                if (imageNode.getAttributes().getLength() > 0) {
-                    //load image properties
-                    nameMatcher = attrExtractor.matcher(imageNode.getAttributes().getNamedItem("block-location").toString());
-                    if (nameMatcher.find()) {
-                        location = nameMatcher.group(1);
-                    }
-                    nameMatcher = attrExtractor.matcher(imageNode.getAttributes().getNamedItem("image-editable").toString());
-                    if (nameMatcher.find()) {
-                        isEditable = nameMatcher.group(1).equals("yes") ? true : false;
-                    }
-                    nameMatcher = attrExtractor.matcher(imageNode.getAttributes().getNamedItem("wrap-text").toString());
-                    if (nameMatcher.find()) {
-                        textWrap = nameMatcher.group(1).equals("yes") ? true : false;
-                    }
-                    int width = -1;
-                    int height = -1;
-                    Node opt_item = imageNode.getAttributes().getNamedItem("width");
-                    if (opt_item != null) {
-                        nameMatcher = attrExtractor.matcher(opt_item.toString());
-                        if (nameMatcher.find()) {
-                            width = Integer.parseInt(nameMatcher.group(1));
-                        }
-                    }
-                    opt_item = imageNode.getAttributes().getNamedItem("height");
-                    if (opt_item != null) {
-                        nameMatcher = attrExtractor.matcher(opt_item.toString());
-                        if (nameMatcher.find()) {
-                            height = Integer.parseInt(nameMatcher.group(1));
-                        }
-                    }
-                    //load actual image
-                    NodeList imageChildren = imageNode.getChildNodes();
-                    Node imageLocationNode;
-                    for (int j = 0; j < imageChildren.getLength(); j++) {
-                        imageLocationNode = imageChildren.item(j);
-                        if (imageLocationNode.getNodeName().equals("FileLocation")) {
-                            String fileLocation = imageLocationNode.getTextContent();
-                            try {
-                                URL fileURL = new URL("file", "", /*workingDirectory +*/ fileLocation);
-                                if (fileURL != null && location != null) {
-                                    //translate location String to ImageLocation representation
-                                    ImageLocation imgLoc = ImageLocation.getImageLocation(location);
-                                    assert imgLoc != null : "Invalid location string loaded: " + imgLoc;
-
-                                    //store in blockImageMap
-                                    ImageIcon icon = new ImageIcon(fileURL);
-                                    if (width > 0 && height > 0) {
-                                        icon.setImage(icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH));
-                                    }
-                                    genus.blockImageMap.put(imgLoc, new BlockImageIcon(icon, imgLoc, isEditable, textWrap));
-                                }
-                            } catch (MalformedURLException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+		genus.blockImageMap.putAll(BlockUtilities.loadBlockImages(images));
     }
 
     /**

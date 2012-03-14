@@ -141,8 +141,8 @@ class FactoryCanvas extends JPanel implements Canvas, SearchableContainer, RBPar
         }
         this.setPreferredSize(new Dimension(maxWidth, ty));
     }
-    private final Integer BLOCK_HIGHLIGHT_LAYER = new Integer(0);
-    private final Integer BLOCK_LAYER = new Integer(1);
+    private final Integer BLOCK_LAYER = new Integer(0);
+    private final Integer BLOCK_HIGHLIGHT_LAYER = new Integer(1);
 
     public void addToBlockLayer(Component c) {
         this.add(c, BLOCK_LAYER);
