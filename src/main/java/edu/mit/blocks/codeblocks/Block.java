@@ -485,7 +485,7 @@ public class Block implements ISupportMemento {
      * connectedSocket
      */
     public void blockConnected(BlockConnector connectedSocket, Long connectedBlockID) {
-        if (connectedSocket.isExpandable()) {
+        if (connectedSocket != null && connectedSocket.isExpandable()) {
             if (connectedSocket.getExpandGroup().length() > 0) {
                 // Part of an expand group
                 expandSocketGroup(connectedSocket.getExpandGroup());
