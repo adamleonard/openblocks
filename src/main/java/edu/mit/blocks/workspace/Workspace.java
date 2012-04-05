@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -910,7 +911,19 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
     }
 
     public Object getState() {
-        return null;
+        WorkspaceState state = new WorkspaceState();
+        
+        Map<Long, Object> blockStates = new HashMap<Long, Object>();
+        Map<Long, Block> allBlocksMap = getEnv().getAllBlocksMap();
+        for (Long blockID : allBlocksMap.keySet()) {
+        	Block block = allBlocksMap.get(blockID);
+        	blockStates.put(blockID, block.getState());
+        }        
+        state.blockStates = blockStates;
+        
+        state.blockCanvasState = blockCanvas.getState();
+        
+        return state;
     }
 
     public void loadState(Object memento) {

@@ -3,6 +3,7 @@ package edu.mit.blocks.workspace;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collections;
 
 import edu.mit.blocks.codeblocks.Block;
 import edu.mit.blocks.codeblocks.BlockGenus;
@@ -49,7 +50,13 @@ public class WorkspaceEnvironment {
     public Block getBlock(Long blockID) {
         return this.allBlocks.get(blockID);
     }
-
+    
+    //returns all blocks in the environment
+    //as a map from BlockID -> Block
+    public Map<Long, Block> getAllBlocksMap() {
+    	return Collections.unmodifiableMap(this.allBlocks);
+	}
+	
     public void addBlock(Block block) {
 
     	long id = block.getBlockID();
