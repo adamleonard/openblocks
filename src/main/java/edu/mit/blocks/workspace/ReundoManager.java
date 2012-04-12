@@ -54,6 +54,10 @@ public class ReundoManager implements WorkspaceListener {
 
     public void workspaceEventOccurred(WorkspaceEvent event) {
         if (!lock) {            
+        	
+        	if(!event.isUserEvent())
+        		return;
+        
 			Date currentDate = new Date();
 			
 			boolean shouldAddToExistingGroup = true;
@@ -87,9 +91,8 @@ public class ReundoManager implements WorkspaceListener {
 					currentStateMemento.add(managedClass.getState());
 				}
 		   }
-		   if (event.isUserEvent()) {
-				lastUserEventDate = currentDate;
-			}
+		   
+			lastUserEventDate = currentDate;
 		}
 	}
 

@@ -418,6 +418,12 @@ public class TypeBlockManager {
     public static void pasteBlock(Workspace workspace) {
         TypeBlockManager.automatePasteBlock(workspace);
     }
+    
+    public static void cutBlock(Workspace workspace) {
+    	//copy then delete the highlighted block
+    	TypeBlockManager.automateCopyBlock(workspace);
+    	workspace.getTypeBlockManager().automateBlockDeletion(workspace);
+    }
 
     protected static void automateCopyBlock(Workspace workspace) {
         TypeBlockManager typeBlockManager = workspace.getTypeBlockManager();

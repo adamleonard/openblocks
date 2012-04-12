@@ -34,6 +34,7 @@ import org.w3c.dom.NodeList;
 import edu.mit.blocks.codeblocks.Block;
 import edu.mit.blocks.codeblockutil.CToolTip;
 import edu.mit.blocks.renderable.RenderableBlock;
+import edu.mit.blocks.renderable.BlockUtilities;
 
 /**
  * A Page serves as both an abstract container of blocks
@@ -658,7 +659,7 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
         this.reformBlockPosition(block);
 
         this.pageJComponent.setComponentZOrder(block, 0);
-    }
+     }
 
     /**
      * @param blocks the Collection of RenderableBlocks to add
@@ -902,7 +903,7 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
             //if the loop above removes the block while iterating over an unmodifiable
             //iterator.
             for (RenderableBlock toBeRemovedBlock : blocksToRemove) {
-                this.removeBlock(toBeRemovedBlock);
+                BlockUtilities.deleteBlock(toBeRemovedBlock);
             }
             //Finally, add all the remaining blocks that weren't there before
             ArrayList<RenderableBlock> blocksToAdd = new ArrayList<RenderableBlock>();

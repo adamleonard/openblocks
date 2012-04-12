@@ -78,23 +78,37 @@ public class BlockUtilities {
         return true;
     }
 
-    public static void deleteBlock(RenderableBlock block) {
-        block.setLocation(0, 0);
+    public static void deleteBlock(RenderableBlock rb) {
+    
+    	Workspace workspace = rb.getWorkspace();
+    	Block block = rb.getBlock();
+    	BlockConnector plug = BlockLinkChecker.getPlugEquivalent(block);
+    	if (plug != null && plug.hasBlock()) {
+			Block parent = workspace.getEnv().getBlock(plug.getBlockID());
+			BlockConnector socket = parent.getConnectorTo(rb.getBlockID());
+			BlockLink link = BlockLink.getBlockLink(workspace, block, parent, plug, socket);
+			link.disconnect();
+			//socket is removed internally from block's socket list if socket is expandable
+			workspace.getEnv().getRenderableBlock(parent.getBlockID()).blockDisconnected(socket);
+			//NOTIFY WORKSPACE LISTENERS OF DISCONNECTION
+			workspace.notifyListeners(new WorkspaceEvent(workspace, rb.getParentWidget(), link, WorkspaceEvent.BLOCKS_DISCONNECTED));
+		}
+    
+        rb.setLocation(0, 0);
 
-        WorkspaceWidget widget = block.getParentWidget();
+        WorkspaceWidget widget = rb.getParentWidget();
         if (widget != null) {
-            widget.removeBlock(block);
+            widget.removeBlock(rb);
         }
 
-        Container parent = block.getParent();
+        Container parent = rb.getParent();
         if (parent != null) {
-            parent.remove(block);
+            parent.remove(rb);
             parent.validate();
         }
 
-        block.setParentWidget(null);
-        Workspace workspace = block.getWorkspace();
-        workspace.notifyListeners(new WorkspaceEvent(workspace, widget, block.getBlockID(), WorkspaceEvent.BLOCK_REMOVED));
+        rb.setParentWidget(null);
+        workspace.notifyListeners(new WorkspaceEvent(workspace, widget, rb.getBlockID(), WorkspaceEvent.BLOCK_REMOVED));
 
     }
 

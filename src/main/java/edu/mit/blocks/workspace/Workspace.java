@@ -448,6 +448,13 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
     public void copyBlocks() {
         typeBlockManager.copyBlock(this);
     }
+    
+    /**
+     * calls TypeBlockManager to cut the highlighted blocks on the canvas
+     */
+    public void cutBlocks() {
+        typeBlockManager.cutBlock(this);
+    }
 
     /**
      * calls TypeBlockManager to pastes the highlighted blocks on the canvas
@@ -930,13 +937,17 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
         assert memento instanceof WorkspaceState : "";
         if (memento instanceof WorkspaceState) {
             WorkspaceState state = (WorkspaceState) memento;
+            //Load the canvas state
+            blockCanvas.loadState(state.blockCanvasState);
+            
             //Load the blocks state
+            //FIXME: temporarily removed because Block state loading is very buggy
+            /*
             for (Long blockID : state.blockStates.keySet()) {
                 Block toBeUpdated = getEnv().getBlock(blockID);
                 toBeUpdated.loadState(state.blockStates.get(blockID));
             }
-            //Load the canvas state
-            blockCanvas.loadState(state.blockCanvasState);
+            */
         }
     }
 
