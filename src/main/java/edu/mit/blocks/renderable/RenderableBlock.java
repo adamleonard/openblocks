@@ -1254,6 +1254,10 @@ public class RenderableBlock extends JComponent implements SearchableElement, Mo
 
         //DRAW BLOCK IMAGES
         repositionBlockImages(blockArea.getBounds().width, blockArea.getBounds().height);
+        
+        //update the highlight
+        if(highlighter != null)
+        	highlighter.updateBounds();
     }
 
     /**
