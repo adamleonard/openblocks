@@ -71,8 +71,22 @@ public class WorkspaceEnvironment {
     }
 
     public long getNextBlockID() {
-    	return this.nextBlockID++;
+		return nextBlockID++;
     }
+    
+   	//recomputes the next block ID 
+   	//based on the blocks currently in the workspace
+   	//the next block ID is set to be one larger 
+   	//than the largest existing block ID
+    public void invalidateNextBlockID() {
+    	long largestExistingBlockID = 0;
+    	for (Long aBlockID : this.allBlocks.keySet()) {
+    		if(aBlockID > largestExistingBlockID)
+    			largestExistingBlockID = aBlockID;
+    	}
+    	nextBlockID = largestExistingBlockID + 1;
+    }
+    	
 
     // BlockStubs
 

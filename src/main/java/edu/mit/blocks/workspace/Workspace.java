@@ -798,6 +798,11 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
         if (newRoot != null) {
             //load pages, page drawers, and their blocks from save file
             blockCanvas.loadSaveString(newRoot);
+            
+            //now that all saved blocks have been loaded, invalidate the next block ID
+            //so that any new blocks we add will not conflict with those we loaded
+            getEnv().invalidateNextBlockID();
+            
             //load the block drawers specified in the file (may contain
             //custom drawers) and/or the lang def file if the contents specify
             PageDrawerLoadingUtils.loadBlockDrawerSets(this, originalLangRoot, factory);
@@ -806,13 +811,17 @@ public class Workspace extends JLayeredPane implements ISupportMemento, RBParent
         } else {
             //load from original language/workspace root specification
             blockCanvas.loadSaveString(originalLangRoot);
+            
+            //now that all saved blocks have been loaded, invalidate the next block ID
+            //so that any new blocks we add will not conflict with those we loaded
+            getEnv().invalidateNextBlockID();
+            
             //load block drawers and their content
             PageDrawerLoadingUtils.loadBlockDrawerSets(this, originalLangRoot, factory);
             loadWorkspaceSettings(originalLangRoot);
         }
-
     }
-
+    
     /**
      * Loads the settings for this Workspace.  Settings include
      * specification of programming environment features such as
