@@ -635,11 +635,12 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
 
         this.getRBParent().addToBlockLayer(block);
         
-        //the highlight layers should always live in the workspace
+        //the highlight layers should always live in the workspace's block canvas
         //this allows it to appear above all other blocks and shine through
         //This is important, since the highlight rings are outset 
         //from the blocks, and thus can easily overlap nearby blocks
-        block.setHighlightParent(workspace);
+        //putting it in the canvas allows the highlight to scroll with the blocks
+        block.setHighlightParent(workspace.getBlockCanvas().getCanvas());
 
         //if block has page labels enabled, in other words, if it can, then set page label to this
         if (workspace.getEnv().getBlock(block.getBlockID()).isPageLabelSetByPage()) {
@@ -765,11 +766,12 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
                 //add graphically
                 getRBParent().addToBlockLayer(rb);
                 
-       			//the highlight layers should always live in the workspace
-        		//this allows it to appear above all other blocks and shine through
-        		//This is important, since the highlight rings are outset 
-        		//from the blocks, and thus can easily overlap nearby blocks
-        		rb.setHighlightParent(workspace);                
+			//the highlight layers should always live in the workspace's block canvas
+			//this allows it to appear above all other blocks and shine through
+			//This is important, since the highlight rings are outset 
+			//from the blocks, and thus can easily overlap nearby blocks
+			//putting it in the canvas allows the highlight to scroll with the blocks
+        		rb.setHighlightParent(workspace.getBlockCanvas().getCanvas());                
                 
                 //System.out.println("loading rb to canvas: "+rb+" at: "+rb.getBounds());
                 //add internallly

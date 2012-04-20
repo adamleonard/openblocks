@@ -1,6 +1,7 @@
 package edu.mit.blocks.workspace;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
@@ -55,7 +56,7 @@ public class BlockCanvas implements PageChangeListener, ISupportMemento {
     /** the collection of PageDivideres that this BlockCanvas stores */
     private List<PageDivider> dividers = new ArrayList<PageDivider>();
     /** The Swing representation of the page container */
-    private JComponent canvas;
+    private Canvas canvas;
     /** The scrollable JComponent representing the graphical part of this BlockCanvas */
     private CScrollPane scrollPane;
     /** The workspace in use */
@@ -131,7 +132,7 @@ public class BlockCanvas implements PageChangeListener, ISupportMemento {
      * @return the Swing Container that holds all the graphical panels of
      * 			all the pages in this Blockcanvas
      */
-    public JComponent getCanvas() {
+    public Canvas getCanvas() {
         return this.canvas;
     }
 
@@ -559,10 +560,11 @@ public class BlockCanvas implements PageChangeListener, ISupportMemento {
      * Note that this is not the graphical scrollable JComponent that represents
      * the BlockCanvas.
      */
-    public class Canvas extends JLayeredPane implements MouseListener, MouseMotionListener {
+    public class Canvas extends JLayeredPane implements MouseListener, MouseMotionListener, RBParent {
 
         private static final long serialVersionUID = 438974092314L;
         private Point p;
+    	private final Integer BLOCK_HIGHLIGHT_LAYER = new Integer(1);
 
         public Canvas() {
             super();
@@ -607,5 +609,16 @@ public class BlockCanvas implements PageChangeListener, ISupportMemento {
 
         public void mouseExited(MouseEvent e) {
         }
+        
+		 /******************************************
+		 * RBParent implemented methods
+		 ******************************************/
+		public void addToBlockLayer(Component c) {
+			return;
+		}
+	
+		public void addToHighlightLayer(Component c) {
+			this.add(c, BLOCK_HIGHLIGHT_LAYER);
+		}
     }
 }
