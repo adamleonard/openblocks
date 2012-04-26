@@ -159,6 +159,7 @@ public class Page implements WorkspaceWidget, SearchableContainer, ISupportMemen
         super();
         this.workspace = workspace;
         this.defaultColor = defaultColor;
+        this.setPageColor(defaultColor);
         this.pageJComponent.setLayout(null);
         this.pageJComponent.setName(name);
         this.abstractWidth = pageWidth > 0 ? pageWidth : Page.DEFAULT_ABSTRACT_WIDTH;
